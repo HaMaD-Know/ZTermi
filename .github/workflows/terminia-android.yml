@@ -1,0 +1,131 @@
+# terminia-template: android-workflow v1
+# Builds an Android APK and/or AAB (Capacitor or Android Gradle project) on a
+# GitHub-hosted Linux runner. Terminia starts it through the GitHub API.
+#
+# variant=debug is signed with the debug key and needs no secrets.
+# variant=release needs these secrets:
+#   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+name: Terminia Android
+run-name: "Terminia Android ${{ inputs.variant }} (${{ inputs.output }}) · ${{ inputs.terminia_build_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      terminia_build_id:
+        description: Build id from Terminia (used to match this run)
+        type: string
+        default: manual
+      project_path:
+        description: Project folder inside the repository
+        type: string
+        default: '.'
+      variant:
+        description: Build variant
+        type: choice
+        options: [debug, release]
+        default: debug
+      output:
+        description: Package format
+        type: choice
+        options: [apk, aab, both]
+        default: apk
+      module:
+        description: Gradle application module
+        type: string
+        default: app
+      java_version:
+        description: JDK major version (preinstalled on the runner)
+        type: string
+        default: '21'
+      generate_native:
+        description: Run `npx cap add android` when a Capacitor project has no android/ folder
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terminia-android-${{ github.ref }}-${{ inputs.terminia_build_id }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Android app
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      PROJECT_PATH: ${{ inputs.project_path }}
+      VARIANT: ${{ inputs.variant }}
+      OUTPUT: ${{ inputs.output }}
+      MODULE: ${{ inputs.module }}
+      JAVA_VERSION: ${{ inputs.java_version }}
+      GENERATE_NATIVE: ${{ inputs.generate_native }}
+      TERMINIA_BUILD_ID: ${{ inputs.terminia_build_id }}
+      TERMINIA_OUT: ${{ github.workspace }}/terminia-out
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect project
+        id: detect
+        run: bash .terminia/ci/detect-project.sh android
+
+      - uses: actions/setup-node@v7
+        if: steps.detect.outputs.has_package_json == 'true'
+        with:
+          node-version: ${{ steps.detect.outputs.node_version }}
+
+      - name: Install dependencies
+        if: steps.detect.outputs.has_package_json == 'true'
+        run: bash .terminia/ci/install-deps.sh
+
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: terminia-gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
+
+      - name: Build
+        id: build
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: bash .terminia/ci/android-build.sh
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          IFS=: read -r -a files <<< "${TERMINIA_SIGNING_FILES:-}"
+          for f in "${files[@]}"; do [ -n "$f" ] && rm -f "$f"; done
+
+      - name: Upload APK
+        if: steps.build.outputs.apk_name != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.build.outputs.apk_name }}
+          path: terminia-out/${{ steps.build.outputs.apk_name }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload AAB
+        if: steps.build.outputs.aab_name != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.build.outputs.aab_name }}
+          path: terminia-out/${{ steps.build.outputs.aab_name }}
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: terminia-android-logs-${{ github.run_attempt }}
+          path: terminia-out/logs/
+          if-no-files-found: ignore
+          retention-days: 14

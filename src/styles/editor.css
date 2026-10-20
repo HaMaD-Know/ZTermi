@@ -1,0 +1,213 @@
+.files {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.files.tree-hidden {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.files.tree-hidden .tree-pane {
+  display: none;
+}
+
+.tree-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--line);
+  background: var(--bg-panel);
+}
+
+.tree {
+  flex: 1;
+  overflow: auto;
+  padding: 6px 0 20px;
+  font-size: var(--text-s);
+}
+
+.tree-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tree-node:hover {
+  background: var(--bg-hover);
+}
+
+.tree-node.active {
+  background: var(--bg-raised);
+  box-shadow: inset 2px 0 0 var(--target-local);
+}
+
+.tree-node .name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-node .icon {
+  color: var(--fg-dim);
+}
+
+.tree-node .more {
+  margin-left: auto;
+  opacity: 0;
+}
+
+.tree-node:hover .more,
+.tree-node:focus-visible .more {
+  opacity: 1;
+}
+
+@media (pointer: coarse) {
+  .tree-node {
+    min-height: 38px;
+  }
+  .tree-node .more {
+    opacity: 1;
+  }
+}
+
+.tree-root-label {
+  padding: 10px 12px 4px;
+  font-size: var(--text-xs);
+  color: var(--fg-faint);
+}
+
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 2px;
+  height: 38px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-panel);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.editor-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--fg-dim);
+  font-size: var(--text-s);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.editor-tab[aria-selected='true'] {
+  color: var(--fg);
+  border-bottom-color: var(--target-local);
+}
+
+.editor-tab .dirty {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--warn);
+}
+
+.editor-host {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor-host .cm-editor {
+  height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: var(--term-size);
+}
+
+.editor-host .cm-scroller {
+  font-family: var(--font-mono);
+  line-height: 1.55;
+}
+
+.editor-host .cm-gutters {
+  background: var(--bg);
+  border-right: 1px solid var(--line);
+  color: var(--fg-faint);
+}
+
+.editor-host .cm-activeLine,
+.editor-host .cm-activeLineGutter {
+  background: color-mix(in srgb, var(--bg-hover) 55%, transparent);
+}
+
+.editor-host .cm-cursor {
+  border-left-color: var(--target-local);
+}
+
+.editor-host .cm-selectionBackground,
+.editor-host .cm-focused .cm-selectionBackground {
+  background: var(--selection) !important;
+}
+
+.editor-host .cm-panels {
+  background: var(--bg-panel);
+  color: var(--fg);
+  border-color: var(--line);
+}
+
+.editor-host .cm-textfield {
+  background: var(--bg-input);
+  border: 1px solid var(--line-strong);
+  color: var(--fg);
+}
+
+.editor-host .cm-button {
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  color: var(--fg);
+  background-image: none;
+}
+
+.editor-host .cm-tooltip {
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  color: var(--fg);
+}
+
+.editor-status {
+  display: flex;
+  gap: 14px;
+  padding: 4px 12px calc(4px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--bg-panel);
+  font-size: var(--text-xs);
+  color: var(--fg-faint);
+}
+
+@media (max-width: 760px) {
+  .files {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .files:not(.tree-hidden) .editor-pane {
+    display: none;
+  }
+}

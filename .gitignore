@@ -1,0 +1,53 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# CI build output and logs
+/build/
+terminia-out/
+
+# Capacitor-generated iOS content
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+ios/App/Pods/
+ios/App/output/
+ios/DerivedData/
+ios/App/build/
+xcuserdata/
+*.xcuserstate
+
+# Release packaging
+release/
+*.ipa
+*.apk
+*.aab
+*.xcarchive
+
+# Remote agent runtime data (contains the token hash and TLS key paths)
+agent/.terminia-agent/
+
+# Environment files and signing material must never be committed
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.mobileprovision
+*.cer
+*.p8
+*.jks
+*.keystore
+signing/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Local Claude Code settings
+.claude/settings.local.json

@@ -1,0 +1,104 @@
+# terminia-template: build-workflow v1
+# Builds a web app, Node.js project, Python package or a custom build profile
+# and uploads the output folder as an artifact. Started by Terminia through
+# the GitHub API. Custom build commands are shown in Terminia before the run
+# is started; they execute on this temporary runner only.
+name: Terminia Build
+run-name: "Terminia ${{ inputs.kind }} build · ${{ inputs.terminia_build_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      terminia_build_id:
+        description: Build id from Terminia (used to match this run)
+        type: string
+        default: manual
+      project_path:
+        description: Project folder inside the repository
+        type: string
+        default: '.'
+      kind:
+        description: What to build
+        type: choice
+        options: [web, node, python, custom]
+        default: web
+      command:
+        description: Build command (empty = npm run build / python -m build)
+        type: string
+        default: ''
+      output_path:
+        description: Output folder or file, relative to the project
+        type: string
+        default: ''
+      runner:
+        description: Runner operating system
+        type: choice
+        options: [linux, macos]
+        default: linux
+      node_version:
+        type: string
+        default: '22'
+      python_version:
+        type: string
+        default: '3.12'
+      env_json:
+        description: Extra non-secret environment variables as a JSON object
+        type: string
+        default: '{}'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ inputs.kind }}
+    runs-on: ${{ inputs.runner == 'macos' && 'macos-26' || 'ubuntu-24.04' }}
+    timeout-minutes: 60
+    env:
+      PROJECT_PATH: ${{ inputs.project_path }}
+      BUILD_KIND: ${{ inputs.kind }}
+      BUILD_COMMAND: ${{ inputs.command }}
+      OUTPUT_PATH: ${{ inputs.output_path }}
+      ENV_JSON: ${{ inputs.env_json }}
+      TERMINIA_BUILD_ID: ${{ inputs.terminia_build_id }}
+      TERMINIA_OUT: ${{ github.workspace }}/terminia-out
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect project
+        id: detect
+        run: bash .terminia/ci/detect-project.sh web
+
+      - uses: actions/setup-node@v7
+        if: steps.detect.outputs.has_package_json == 'true'
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      - uses: actions/setup-python@v7
+        if: inputs.kind == 'python'
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install dependencies
+        if: steps.detect.outputs.has_package_json == 'true'
+        run: bash .terminia/ci/install-deps.sh
+
+      - name: Build
+        run: bash .terminia/ci/web-build.sh
+
+      - name: Upload output
+        uses: actions/upload-artifact@v7
+        with:
+          name: terminia-${{ inputs.kind }}-output
+          path: terminia-out/package/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: terminia-build-logs-${{ github.run_attempt }}
+          path: terminia-out/logs/
+          if-no-files-found: ignore
+          retention-days: 14

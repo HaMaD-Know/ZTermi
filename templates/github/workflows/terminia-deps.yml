@@ -1,0 +1,81 @@
+# terminia-template: deps-workflow v1
+# Runs a dependency operation (install, add, remove, update, list) with the
+# project's real package manager on a clean runner. The changed manifest and
+# lock files are uploaded as an artifact; Terminia shows them and applies them
+# to the project on the iPad only after you confirm. Nothing is pushed back.
+name: Terminia Dependencies
+run-name: "Terminia deps ${{ inputs.operation }} (${{ inputs.ecosystem }}) · ${{ inputs.terminia_build_id }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      terminia_build_id:
+        description: Build id from Terminia (used to match this run)
+        type: string
+        default: manual
+      project_path:
+        description: Project folder inside the repository
+        type: string
+        default: '.'
+      ecosystem:
+        type: choice
+        options: [npm, pnpm, yarn, pip, gradle, cocoapods, swiftpm]
+        default: npm
+      operation:
+        type: choice
+        options: [install, add, remove, update, list]
+        default: install
+      packages:
+        description: Space-separated package names (registry packages only)
+        type: string
+        default: ''
+      dev:
+        description: Add as a development dependency
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  deps:
+    name: ${{ inputs.operation }} ${{ inputs.ecosystem }} dependencies
+    runs-on: ${{ (inputs.ecosystem == 'cocoapods' || inputs.ecosystem == 'swiftpm') && 'macos-26' || 'ubuntu-24.04' }}
+    timeout-minutes: 30
+    env:
+      PROJECT_PATH: ${{ inputs.project_path }}
+      ECOSYSTEM: ${{ inputs.ecosystem }}
+      OPERATION: ${{ inputs.operation }}
+      PACKAGES: ${{ inputs.packages }}
+      DEV: ${{ inputs.dev }}
+      TERMINIA_BUILD_ID: ${{ inputs.terminia_build_id }}
+      TERMINIA_OUT: ${{ github.workspace }}/terminia-out
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Detect project
+        run: bash .terminia/ci/detect-project.sh deps
+
+      - uses: actions/setup-node@v7
+        if: contains(fromJSON('["npm","pnpm","yarn"]'), inputs.ecosystem)
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v7
+        if: inputs.ecosystem == 'pip'
+        with:
+          python-version: '3.12'
+
+      - name: Run dependency operation
+        run: bash .terminia/ci/deps.sh
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: terminia-deps-result
+          path: |
+            terminia-out/deps-result/
+            terminia-out/logs/
+          if-no-files-found: ignore
+          retention-days: 7

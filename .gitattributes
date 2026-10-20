@@ -1,0 +1,9 @@
+* text=auto eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.png binary
+*.jpg binary
+*.ipa binary
+*.apk binary
+*.zip binary
+*.pbxproj text eol=lf merge=union
