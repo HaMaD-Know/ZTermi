@@ -17,10 +17,26 @@ class EntryView {
 
   constructor(
     readonly entry: TerminalEntry,
+    number: number,
     private readonly onChange: () => void,
+    copy: (text: string) => void,
   ) {
     this.lines = h('div', { class: 'entry-lines' });
-    this.el = h('div', { class: 'entry' }, h('div', { class: 'entry-head' }, h('span', { class: 'entry-prompt' }, `${entry.prompt} `), entry.input), this.lines);
+    const copyButton = h(
+      'button',
+      {
+        type: 'button',
+        class: 'entry-copy',
+        title: `Copy run ${number}: the command and its output`,
+        onPointerdown: (e: Event) => e.preventDefault(),
+        onClick: (e: Event) => {
+          e.stopPropagation();
+          copy([`${entry.prompt} ${entry.input}`, ...entry.lines.filter((l) => !l.action).map((l) => l.text)].join('\n'));
+        },
+      },
+      `copy ${number}`,
+    );
+    this.el = h('div', { class: 'entry' }, h('div', { class: 'entry-head' }, h('span', { class: 'entry-text' }, h('span', { class: 'entry-prompt' }, `${entry.prompt} `), entry.input), copyButton), this.lines);
     const lines = entry.lines;
     if (entry.dropped || lines.length > MAX_RENDERED_LINES) {
       const hidden = Math.max(0, lines.length - MAX_RENDERED_LINES) + entry.dropped;
@@ -184,7 +200,13 @@ export class TerminalView {
   }
 
   private addEntry(entry: TerminalEntry): void {
-    const view = new EntryView(entry, () => this.scrollIfPinned());
+    const number = this.entries.size + 1;
+    const view = new EntryView(entry, number, () => this.scrollIfPinned(), (text) =>
+      void this.services.platform.copyText(text).then(
+        () => toast(`Run ${number} copied`, 'success'),
+        () => toast('Could not copy', 'error'),
+      ),
+    );
     this.entries.set(entry.id, view);
     this.history_.appendChild(view.el);
     this.stickToBottom = true;

@@ -28,18 +28,26 @@ export function isNativeIOS(): boolean {
 }
 
 async function copyText(text: string): Promise<void> {
-  if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(text);
-    return;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+  } catch {
+    // Blocked (permissions, embedded view): fall back to a selection copy.
   }
+  const focused = document.activeElement as HTMLElement | null;
   const area = document.createElement('textarea');
   area.value = text;
+  area.setAttribute('readonly', '');
   area.style.position = 'fixed';
   area.style.opacity = '0';
   document.body.appendChild(area);
   area.select();
-  document.execCommand('copy');
+  const ok = document.execCommand('copy');
   area.remove();
+  focused?.focus({ preventScroll: true });
+  if (!ok) throw new Error('The clipboard is not available.');
 }
 
 function openUrl(url: string): void {

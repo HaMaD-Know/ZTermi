@@ -58,6 +58,38 @@
   overflow-wrap: anywhere;
 }
 
+.entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: 2ch;
+}
+
+.entry-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* "copy N" on each run: faint until pointed at, so the console stays plain. */
+.entry-copy {
+  flex: none;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: var(--con-dim);
+  font: inherit;
+  font-size: 0.85em;
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.entry-copy:hover,
+.entry-copy:focus-visible {
+  opacity: 1;
+  color: var(--con-fg);
+  background: rgba(127, 127, 127, 0.18);
+}
+
 .term-banner {
   margin-bottom: 1.35em;
 }
