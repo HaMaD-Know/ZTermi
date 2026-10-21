@@ -131,9 +131,29 @@ export function builtinCommands(registry: Registry): CommandSpec[] {
       if (ctx.session.remoteProfile()) {
         await ctx.session.exitRemote();
         ctx.out.info('Back to local commands.');
-      } else ctx.out.info('This tab is already running local commands. Close the tab with ⌘W.');
+      } else ctx.out.info('Already running local commands.');
     },
   };
 
-  return [help, clear, echo, history, date, sleepCommand, which, exit];
+  const SCREENS = ['projects', 'files', 'deps', 'builds', 'artifacts', 'settings'] as const;
+  const open: CommandSpec = {
+    name: 'screen',
+    aliases: ['show'],
+    group: GROUP,
+    summary: 'Open a full screen: projects, files, deps, builds, artifacts or settings (Esc returns here)',
+    target: LOCAL,
+    positionals: [{ name: 'screen', description: SCREENS.join(', '), required: true }],
+    async run(ctx) {
+      const name = ctx.args.positionals[0]!.toLowerCase();
+      const screen = SCREENS.find((s) => s === name);
+      if (!screen) {
+        ctx.out.error(`Unknown screen '${name}'. Choose one of: ${SCREENS.join(', ')}.`);
+        return 2;
+      }
+      ctx.services.ui.openView(screen);
+      return 0;
+    },
+  };
+
+  return [help, clear, echo, history, date, sleepCommand, which, exit, open];
 }

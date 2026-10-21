@@ -1904,6 +1904,20 @@ Options:
   --path <path>    Path (PowerShell style; same as the positional argument)
 ```
 
+## `screen`
+
+```text
+screen — Open a full screen: projects, files, deps, builds, artifacts or settings (Esc returns here)
+Runs on: Local iPad
+Aliases: show
+
+Usage:
+  screen <screen>
+
+Arguments:
+  screen  projects, files, deps, builds, artifacts, settings
+```
+
 ## `Set-Content`
 
 ```text

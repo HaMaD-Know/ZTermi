@@ -178,7 +178,7 @@ export class TerminalSession extends Emitter<SessionEvents> implements SessionAp
 
   prompt(): string {
     if (this.remote) return `[${this.remote.profileName}] PS ${this.remote.cwd() ?? ''}>`;
-    return `${displayPath(this.currentDir)} >`;
+    return `PS ${displayPath(this.currentDir)}>`;
   }
 
   clearScreen(): void {

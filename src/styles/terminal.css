@@ -1,315 +1,139 @@
+/*
+ * The terminal is a plain console: one black surface, monospace text, and the
+ * prompt line you type on directly. No boxes, borders or toolbars.
+ */
+:root {
+  --con-bg: #0c0c0c;
+  --con-fg: #cccccc;
+  --con-dim: #767676;
+  --con-red: #e74856;
+  --con-yellow: #f9f1a5;
+  --con-green: #16c60c;
+  --con-cyan: #61d6d6;
+  --con-select: rgba(255, 255, 255, 0.25);
+}
+
+:root[data-theme='light'] {
+  --con-bg: #ffffff;
+  --con-fg: #1e1e1e;
+  --con-dim: #6e6e6e;
+  --con-red: #c50f1f;
+  --con-yellow: #9a6700;
+  --con-green: #13820b;
+  --con-cyan: #0e7490;
+  --con-select: rgba(0, 0, 0, 0.18);
+}
+
 .term {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
-}
-
-.term-tabs {
-  display: flex;
-  align-items: stretch;
-  gap: 2px;
-  height: 38px;
-  padding: 0 8px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg-panel);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.term-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 220px;
-  padding: 0 6px 0 12px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  color: var(--fg-dim);
+  background: var(--con-bg);
+  color: var(--con-fg);
   font-family: var(--font-mono);
-  font-size: var(--text-s);
-  white-space: nowrap;
-  cursor: pointer;
+  font-size: var(--term-size);
+  line-height: 1.35;
 }
 
-.term-tab[aria-selected='true'] {
-  color: var(--fg);
-  border-bottom-color: var(--target-local);
+.term ::selection {
+  background: var(--con-select);
 }
 
-.term-tab.remote[aria-selected='true'] {
-  border-bottom-color: var(--target-remote);
-}
-
-.term-tab .close {
-  display: inline-grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-  color: var(--fg-faint);
-}
-
-.term-tab .close:hover {
-  background: var(--bg-hover);
-  color: var(--fg);
-}
-
-.term-tab .running {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--target-cloud);
-}
-
-.term-tools {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
-.term-search {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bg-panel);
-}
-
-.term-search[hidden] {
-  display: none;
-}
-
-.term-search .text-input {
-  max-width: 340px;
-  min-height: 30px;
-  font-family: var(--font-mono);
-}
-
-.term-output {
+.term-screen {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 10px 0 16px;
-  font-family: var(--font-mono);
-  font-size: var(--term-size);
-  line-height: 1.5;
   -webkit-overflow-scrolling: touch;
-  user-select: text;
-  -webkit-user-select: text;
+  padding: 10px 12px calc(14px + env(safe-area-inset-bottom));
+  cursor: text;
+  overscroll-behavior: contain;
 }
 
-.term-welcome {
-  padding: 4px 16px 14px;
-  color: var(--fg-dim);
+.term-banner,
+.entry-head,
+.line,
+.term-line {
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
-/* One command and its output. The left rule is the execution target. */
-.entry {
-  --rule: var(--target-local);
-  position: relative;
-  margin: 0 12px 10px;
-  padding: 2px 0 4px 14px;
-  border-left: 3px solid var(--rule);
-}
-
-.entry.remote {
-  --rule: var(--target-remote);
-}
-
-.entry.cloud {
-  --rule: var(--target-cloud);
-}
-
-.entry.network {
-  --rule: var(--target-network);
-}
-
-.entry-head {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.entry-prompt {
-  color: var(--rule);
-  white-space: nowrap;
-}
-
-.entry-input {
-  flex: 1 1 32ch;
-  min-width: 0;
-  color: var(--fg);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.entry-meta {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  color: var(--fg-faint);
-}
-
-.entry-meta .exit-ok {
-  color: var(--ok);
-}
-
-.entry-meta .exit-err {
-  color: var(--err);
-}
-
-.entry-meta .btn {
-  min-height: 24px;
-  padding: 0 8px;
-  font-size: var(--text-xs);
-}
-
-.entry-lines {
-  margin-top: 2px;
-  white-space: pre-wrap;
-  word-break: break-word;
-  tab-size: 4;
-}
-
-.line {
-  min-height: 1.5em;
+.term-banner {
+  margin-bottom: 1.35em;
 }
 
 .line.stderr {
-  color: var(--err);
+  color: var(--con-red);
 }
 
-.line.warn {
-  color: var(--warn);
+.line.warn,
+.line.warning {
+  color: var(--con-yellow);
 }
 
 .line.success {
-  color: var(--ok);
+  color: var(--con-green);
 }
 
 .line.info {
-  color: var(--info);
+  color: var(--con-cyan);
 }
 
-.line.muted {
-  color: var(--fg-faint);
+.line.muted,
+.line.system,
+.line.verbose,
+.line.debug {
+  color: var(--con-dim);
 }
 
-.line .ts {
-  display: inline-block;
-  width: 9ch;
-  color: var(--fg-faint);
-  user-select: none;
-  -webkit-user-select: none;
+.line-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--con-cyan);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
-.line-action {
-  margin: 4px 0;
-}
-
-.line-action .btn {
-  min-height: 28px;
-  font-family: var(--font-ui);
-  font-size: var(--text-s);
-}
-
-.entry-collapsed {
-  margin: 4px 0;
-  color: var(--fg-faint);
-}
-
-mark.hit {
-  background: color-mix(in srgb, var(--focus) 45%, transparent);
-  color: inherit;
-  border-radius: 2px;
-}
-
-mark.hit.current {
-  background: var(--focus);
-  color: var(--bg);
-}
-
-/* ------------------------------------------------------------------ input */
-.term-input-area {
-  border-top: 1px solid var(--line);
-  background: var(--bg-panel);
-  padding: 8px 12px 8px;
-}
-
-.term-input-row {
+/* The prompt line: the prompt text, then the caret right after it. */
+.term-line {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+}
+
+.term-line[hidden] {
+  display: none;
 }
 
 .term-prompt {
-  padding-top: 7px;
-  font-family: var(--font-mono);
-  font-size: var(--term-size);
-  color: var(--target-local);
-  white-space: nowrap;
-  max-width: 40%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.term-input-area.remote .term-prompt {
-  color: var(--target-remote);
+  flex: none;
+  white-space: pre;
 }
 
 .term-input {
   flex: 1;
-  min-height: 36px;
-  max-height: 40vh;
-  padding: 7px 10px;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-s);
-  background: var(--bg-input);
-  color: var(--fg);
-  font-family: var(--font-mono);
-  font-size: var(--term-size);
-  line-height: 1.45;
-  resize: none;
-  overflow-y: auto;
-}
-
-.term-input:focus {
+  min-width: 2ch;
+  margin: 0;
+  padding: 0;
+  border: 0;
   outline: none;
-  border-color: var(--target-local);
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: inherit;
+  caret-color: var(--con-fg);
+  font: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
-.term-input-area.remote .term-input:focus {
-  border-color: var(--target-remote);
-}
-
-.term-mode {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  font-size: var(--text-xs);
-  color: var(--fg-faint);
-  min-height: 18px;
-}
-
+/* Tab completion candidates are listed under the prompt, like a shell. */
 .completions {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin-bottom: 8px;
-  max-height: 120px;
-  overflow-y: auto;
+  gap: 0 2ch;
 }
 
 .completions[hidden] {
@@ -317,32 +141,66 @@ mark.hit.current {
 }
 
 .completion {
-  padding: 3px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--bg-raised);
-  color: var(--fg);
-  font-family: var(--font-mono);
-  font-size: var(--text-s);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--con-fg);
+  font: inherit;
   cursor: pointer;
 }
 
-.completion[aria-selected='true'] {
-  border-color: var(--target-local);
+.completion:hover,
+.completion:focus-visible {
+  text-decoration: underline;
 }
 
-.completion small {
-  margin-left: 6px;
-  color: var(--fg-faint);
-  font-family: var(--font-ui);
+.completion.more {
+  color: var(--con-dim);
+  cursor: default;
 }
 
+/* Find (⌘F) only appears when asked for. */
+.term-search {
+  display: flex;
+  padding: 6px 12px;
+  background: var(--con-bg);
+  border-bottom: 1px solid var(--con-dim);
+}
+
+.term-search[hidden] {
+  display: none;
+}
+
+.term-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--con-fg);
+  font: inherit;
+}
+
+mark.hit {
+  background: #6b5c00;
+  color: inherit;
+}
+
+mark.hit.current {
+  background: #b38f00;
+  color: #000;
+}
+
+/* Extra keys for the on-screen keyboard (touch devices only). */
 .keybar {
   display: flex;
   gap: 4px;
-  margin-top: 8px;
+  padding: 4px 6px calc(4px + env(safe-area-inset-bottom));
   overflow-x: auto;
   scrollbar-width: none;
+  background: var(--con-bg);
+  border-top: 1px solid #262626;
 }
 
 .keybar[hidden] {
@@ -351,25 +209,20 @@ mark.hit.current {
 
 .keybar button {
   flex: none;
-  min-width: 44px;
+  min-width: 40px;
   height: 36px;
   padding: 0 10px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-s);
-  background: var(--bg-raised);
-  color: var(--fg);
-  font-family: var(--font-mono);
-  font-size: var(--text-s);
+  border: 0;
+  border-radius: 6px;
+  background: #262626;
+  color: var(--con-fg);
+  font: 13px var(--font-mono);
 }
 
-.keybar button.stop {
-  color: var(--err);
+:root[data-theme='light'] .keybar {
+  border-top-color: #e5e5e5;
 }
 
-.line .ts {
-  display: none;
-}
-
-.show-ts .line .ts {
-  display: inline-block;
+:root[data-theme='light'] .keybar button {
+  background: #ececec;
 }

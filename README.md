@@ -36,7 +36,7 @@ There is no embedded Node.js, Python or PowerShell on the iPad, the iPad never r
 
 ## What it does
 
-- **Terminal** - tabs, multi-line input, history (↑/↓, persisted, secrets redacted), Tab completion, pipes (`|`), `&&`/`||`/`;`, redirection (`>`, `>>`, `2>`, `2>&1`), search in output, copy, Stop (Ctrl+C), exit codes, timestamps, working directory, and an iPad key bar (Tab, Esc, arrows, Ctrl-C, `|`, `~`…). PowerShell-only syntax (`$variables`, `{ }` script blocks, `$( )`) is refused locally with a pointer to remote hosts instead of being half-interpreted.
+- **Terminal** - a plain full-screen console like Windows PowerShell: you type directly after the `PS …>` prompt, with no separate input box or toolbars. Multi-line input, history (↑/↓, persisted, secrets redacted), Tab completion, pipes (`|`), `&&`/`||`/`;`, redirection (`>`, `>>`, `2>`, `2>&1`), find (⌘F), Ctrl+C to stop, Ctrl+L / ⌘K to clear, and an on-screen key bar on touch devices (Tab, Esc, arrows, ^C, `|`, `~`…). Other screens (projects, files/editor, builds, artifacts, dependencies, settings) open full screen only when a command needs them or with `screen <name>`; Esc returns to the console. PowerShell-only syntax (`$variables`, `{ }` script blocks, `$( )`) is refused locally with a pointer to remote hosts instead of being half-interpreted.
 - **Projects** - templates (Capacitor, static web, Node.js, Python, PowerShell module, empty), import from a zip or a folder, open a folder **in place** (iCloud Drive, On My iPad, other providers) through Apple's document picker, export a zip (secrets and ignored files are left out), detection of project type and of which build targets are actually possible.
 - **Files and editor** - file tree, CodeMirror 6 editor with syntax highlighting for PowerShell, JavaScript/TypeScript, JSON, HTML, CSS, Python, YAML, XML, Markdown, TOML, Gradle, Kotlin, Swift, shell and more; tabs, find/replace, save with conflict detection (files changed by another app), Save As, Save to Files.
 - **Builds** - iOS / Android / Web / Custom targets, preflight checks (GitHub connection, repository, workflow on the default branch, signing secrets), sync preview and confirmation, live status and steps, full job logs, error annotations, cancel, history (including runs started elsewhere), artifact download.
@@ -49,8 +49,8 @@ There is no embedded Node.js, Python or PowerShell on the iPad, the iPad never r
 ```
  iPad app (Capacitor 8 + TypeScript)                         Your infrastructure
  ┌────────────────────────────────────────────────┐
- │ UI: Terminal · Projects · Files · Dependencies │
- │     Builds · Artifacts · Settings              │
+ │ UI: full-screen console; editor, builds and    │
+ │     settings screens opened by commands        │
  ├────────────────────────────────────────────────┤
  │ Terminal engine: tokenizer, commands, routing  │
  │ Services: projects, builds, artifacts, deps,   │
